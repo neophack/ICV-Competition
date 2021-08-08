@@ -13,6 +13,6 @@ END
 rm release.zip
 zip -q -j release.zip tmp/*
 rm -r tmp/
-cp release.zip /mnt/c/Users/Master/Desktop
-rm release.zip
+# cp release.zip /mnt/c/Users/Master/Desktop
+# rm release.zip
 echo 'DONE'
