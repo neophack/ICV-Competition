@@ -126,7 +126,6 @@ def DEBUG():
 
 if __name__ == '__main__':
 
-    inAEBState = False
     isSimOneInitialized = False
     apiAllStart(True)
     SoSetDriverName(0, "yrAEB")
@@ -216,9 +215,9 @@ if __name__ == '__main__':
             % (sObstalce, tObstacle, sMainVehicle, tMainVehicle),
         )
 
-        flag=True
+        flag = True
         if not SoGetDriverControl(0, control):
-            flag=False
+            flag = False
             SoBridgeLogOutput(2, "GetDriverControl Failed")
 
         if isObstalceBehind:
@@ -231,17 +230,17 @@ if __name__ == '__main__':
             SoBridgeLogOutput(0, "timeToCollision: %.1f" % timeToCollision)
 
             if timeToCollision < defautlTimeToCollision and timeToCollision > 0:
-                inAEBState = True
-                control.brake = mainVehicleSpeed * 3.6 * 0.65 + 0.20
-
-            if inAEBState:
+                if timeToCollision > 1.0:
+                    control.brake = 0.4
+                else:
+                    control.brake = 0.8
                 control.throttle = 0
 
         if flag:
             if not SoApiSetDrive(0, control):
                 SoBridgeLogOutput(2, "SetDrive Failed")
             else:
-                SoBridgeLogOutput(0,"SetDrive Successfully")
+                SoBridgeLogOutput(0, "SetDrive Successfully")
 
         SoBridgeLogOutput(0, "-" * 20 + "END OF FRAME" + "-" * 20)
         SoAPINextFrame(frame)
