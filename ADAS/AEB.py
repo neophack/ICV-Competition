@@ -221,8 +221,8 @@ if __name__ == '__main__':
             SoBridgeLogOutput(2, "GetDriverControl Failed")
 
         if isObstalceBehind:
-            defaultDistance = 6
-            defautlTimeToCollision = 3.4
+            defaultDistance = 7.0
+            defautlTimeToCollision = 2.0
             timeToCollision = (minDistance - defaultDistance) / (
                 mainVehicleSpeed - obstacleSpeed
             )
@@ -230,11 +230,13 @@ if __name__ == '__main__':
             SoBridgeLogOutput(0, "timeToCollision: %.1f" % timeToCollision)
 
             if timeToCollision < defautlTimeToCollision and timeToCollision > 0:
-                if timeToCollision > 1.0:
-                    control.brake = 0.4
+                if timeToCollision < 0.6:
+                    control.brake = 1.0
+                elif timeToCollision < 1.0:
+                    control.brake = 0.6
                 else:
-                    control.brake = 0.8
-                control.throttle = 0
+                    control.brake = 0.3
+                control.throttle = 0.0
 
         if flag:
             if not SoApiSetDrive(0, control):
