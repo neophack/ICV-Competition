@@ -221,10 +221,10 @@ if __name__ == '__main__':
             SoBridgeLogOutput(2, "GetDriverControl Failed")
 
         if isObstalceBehind:
-            defaultDistance = 7.0
-            defautlTimeToCollision = 2.0
+            defaultDistance = 4
+            defautlTimeToCollision = 5
             timeToCollision = (minDistance - defaultDistance) / (
-                mainVehicleSpeed - obstacleSpeed
+                mainVehicleSpeed+0.1 
             )
 
             SoBridgeLogOutput(0, "timeToCollision: %.1f" % timeToCollision)
@@ -243,6 +243,18 @@ if __name__ == '__main__':
                 SoBridgeLogOutput(2, "SetDrive Failed")
             else:
                 SoBridgeLogOutput(0, "SetDrive Successfully")
+
+        obstaclePos = pySimOneIO.pySimPoint3D(
+            SimOne_Data_Obstacle_Test.obstacle[0].posX,
+            SimOne_Data_Obstacle_Test.obstacle[0].posY,
+            SimOne_Data_Obstacle_Test.obstacle[0].posZ,
+        )
+        l = (
+            planarDistance(mainVehiclePos, obstaclePos)
+            - potentialObstacle.length / 2
+            - 4.0
+        )
+        SoBridgeLogOutput(0, "realDistance:%.2f" % l)
 
         SoBridgeLogOutput(0, "-" * 20 + "END OF FRAME" + "-" * 20)
         SoAPINextFrame(frame)

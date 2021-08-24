@@ -1,2 +1,6 @@
 /.vscode
 /samples
+
+*.sh
+!build*.sh
+!release.sh
