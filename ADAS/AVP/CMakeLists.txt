@@ -1,4 +1,4 @@
-aux_source_directory(./src SRCS)
+file(GLOB_RECURSE SRCS *.h *.hh *i *.hpp *.c *.cc *.cpp)
 add_executable(AVP ${SRCS})
 
 include_directories("${INCLUDE_DIR}")
