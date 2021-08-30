@@ -12,6 +12,8 @@ project(ICV-Competition VERSION 0.1.0)
 set(LIB_DIR "${CMAKE_CURRENT_LIST_DIR}/../lib")
 set(INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/../include")
 
+add_definitions(-DCLOUD_PLATFORM)
+
 # varibles
 set(WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
 set(BINARY_OUT_PATH ${WORKING_DIRECTORY}/bin)
@@ -33,3 +35,4 @@ endfunction()
 # subprojects
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB AEB)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AVP AVP)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AutoPilot PredefinedRoute)
