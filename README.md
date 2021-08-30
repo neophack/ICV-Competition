@@ -96,5 +96,5 @@ sh release.sh
 清除：
 
 ```shell
-bash build_clean.sh
+sh clean.sh
 ```
