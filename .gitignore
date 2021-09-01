@@ -1,5 +1,10 @@
 /.vscode
 /samples
+/bin
+/build/build_tmp
+/build/cmake-build-debug
+.DS_Store
+.idea
 
 *.sh
 !build*.sh
