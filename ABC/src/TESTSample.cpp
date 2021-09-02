@@ -26,6 +26,11 @@ int main()
 
 	double goalX = -95.1875,goalY = -128.25;
     tool::Car car(2.9187,1.85,3.9187,0.88);
+    tool::Path pth;
+    for(int i=0;i < 100;i++){
+        pth.x.push_back(-104.0+i);
+        pth.y.push_back(-134.56);
+    }
 
 
 	int timeout = 20;
@@ -61,10 +66,12 @@ int main()
             //-----------------------------------------------------------------------------------------------------------
             double steering,acc;
 			double speed;
+			int ind;
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "here1");
             speed = UtilMath::calculateSpeed(pGps->velX,pGps->velY,pGps->velZ);
             car.setState(pGps->posX,pGps->posY,pGps->oriZ,speed);
-            steering = car.calcSteering(goalX,goalY);
+            ind = car.calcIndex(pth,0.5,2);
+            steering = car.calcSteering(pth.x[ind],pth.y[ind]);
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "here2");
             if(speed <= 2)
                 acc = 1;
@@ -73,6 +80,7 @@ int main()
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "here3");
             setDriver(acc,steering,1);
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError, "x:%lf y:%lf  steering:%lf",pGps->posX,pGps->posY,steering);
+            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError, "target:x:%lf y:%lf",pth.x[ind],pth.y[ind],steering);
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "here4");
             //-----------------------------------------------------------------------------------------------------------
 		}
