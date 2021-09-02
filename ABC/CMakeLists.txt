@@ -8,6 +8,7 @@ target_sources(TEST PRIVATE ${srcs} ${headers})
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${srcs})
 
 include_directories("${INCLUDE_DIR}")
+include_directories(./src/kdtree)
 
 
 add_definitions(-DNOMINMAX)

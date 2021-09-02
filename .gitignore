@@ -5,6 +5,7 @@
 /build/cmake-build-debug
 .DS_Store
 .idea
+*.zip
 
 *.sh
 !build*.sh
