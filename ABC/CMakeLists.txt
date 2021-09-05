@@ -1,9 +1,9 @@
 add_executable(TEST "")
 
-file(GLOB_RECURSE srcs *.h *.hh *i *.hpp *.c *.cc *.cpp *.py)
+file(GLOB_RECURSE srcs *.hh *i *.hpp *.c *.cc *.cpp)
 file(GLOB_RECURSE headers *.h)
 
-target_sources(TEST PRIVATE ${srcs} ${headers})
+target_sources(TEST PRIVATE ${srcs})
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${srcs})
 

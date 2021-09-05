@@ -7,17 +7,27 @@
 
 #include <cmath>
 #include <iostream>
+#include <ostream>
+#include <math.h>
+#include <algorithm>
 #include <vector>
 
-#define MAX_ACC 15.0 //最大加速度
+#define MAX_ACC 15 //最大加速度
 
 namespace tool{
     double distance(double x1,double y1,double x2,double y2){
         return std::sqrt(pow(x2-x1,2)+pow(y2-y1,2));
     }
 
-    double pi_2_pi(double angel){ // 把角度限制在 [-pi,pi]
-        return fmod(angel+M_PI,2*M_PI) - M_PI;
+    double pi_2_pi(double angel){ // 把角度限制在 [0,2pi]
+        if(angel < 0)
+            while(angel < 0)
+                angel += 2*M_PI;
+
+        if(angel > 2*M_PI)
+            while(angel > 2*M_PI)
+                angel -= 2*M_PI;
+        return angel;
     }
 
     void a2contr(double a,double &throttle,double &brake){ // 把加速度转为油门刹车，这里瞎写一通就好了...
@@ -128,14 +138,14 @@ namespace tool{
         return steering;
     }
 
-    int Car::calcIndex(Path path, double k, double dis) {
+    int Car::calcIndex(Path path,int &lastIndex,double k, double dis) {
         int minInd = -1;
         double minDis = 99999999;
         std::vector<double> dist;
 
         dist.reserve(path.size());
         // 计算每一个路径点到车坐标的距离
-        for(int i=0;i < path.size();i++){
+        for(int i=lastIndex;i < path.size();i++){
             dist[i] = distance(path.x[i],path.y[i],x,y);
             if(dist[i] < minDis){
                 minDis = dist[i];
@@ -146,8 +156,10 @@ namespace tool{
         //这里开始minDis设置为最短预瞄距离
         minDis = k*v > dis? k*v:dis;
         for(int i=minInd;i < path.size();i++)
-            if(dist[i] >= minDis)
+            if(dist[i] >= minDis) {
+                lastIndex = i;
                 return i;
+            }
 
         return path.size() - 1;
     }
@@ -159,6 +171,12 @@ namespace tool{
         T.reserve(100);
         v.reserve(100);
         kappa.reserve(100);
+    }
+
+    std::ostream &operator<<(std::ostream &out, Path path) {
+        for (int i = 0; i < path.size(); i++)
+            printf("x:%lf y:%lf yaw:%lf d:%d\n", path.x[i], path.y[i], path.yaw[i], path.d[i]);
+        return out;
     }
 
     void destr(void *data){
@@ -191,7 +209,7 @@ namespace tool{
         kd_data_destructor(kd, destr);
     }
 
-    Obstacle *Obstacles::getNearestObs(double x, double y) {
+    Obstacle *Obstacles::getNearestObs(double x, double y) const{
         Obstacle *ret;
         kdres *res;
         double pos[2];
@@ -205,7 +223,7 @@ namespace tool{
         return ret;
     }
 
-    Obstacle **Obstacles::getObsRange(double x, double y, double dis, int &size) {
+    Obstacle **Obstacles::getObsRange(double x, double y, double dis, int &size) const {
         Obstacle **ret;
         Obstacle **p;
         kdres *res;
@@ -216,7 +234,7 @@ namespace tool{
         size = res->size;
         ret = new Obstacle* [size];
         p = ret;
-        for(auto it=res->riter;it != NULL;it=it->next)
+        for(struct res_node *it=res->riter;it != NULL;it=it->next)
             *p++ = (Obstacle *)it->item->data;
         kd_res_free(res);
         return ret;

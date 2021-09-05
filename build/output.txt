@@ -1,0 +1,40 @@
+Deleting build_tmp...
+Deleting bin...
+DONE
+-- The C compiler identification is Clang 6.0.0
+-- The CXX compiler identification is Clang 6.0.0
+-- Check for working C compiler: /usr/bin/clang
+-- Check for working C compiler: /usr/bin/clang -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/clang++
+-- Check for working CXX compiler: /usr/bin/clang++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /media/psf/Home/Desktop/git/ICV-Competition/build/build_tmp
+Scanning dependencies of target AEB
+[  8%] Building CXX object AEB/CMakeFiles/AEB.dir/src/AEBSample.cpp.o
+Scanning dependencies of target TEST
+[ 16%] Building CXX object ABC/CMakeFiles/TEST.dir/src/PID.cpp.o
+[ 50%] Building CXX object ABC/CMakeFiles/TEST.dir/src/car.cpp.o
+[ 50%] Building CXX object ABC/CMakeFiles/TEST.dir/src/hybridAStar.cpp.o
+[ 50%] Building CXX object ABC/CMakeFiles/TEST.dir/src/TESTSample.cpp.o
+[ 50%] Building CXX object ABC/CMakeFiles/TEST.dir/src/kdtree/kdtree.cpp.o
+[ 58%] Building CXX object ABC/CMakeFiles/TEST.dir/src/tool.cpp.o
+Scanning dependencies of target AVP
+[ 75%] Building CXX object AVP/CMakeFiles/AVP.dir/src/main.cpp.o
+[ 75%] Building CXX object AVP/CMakeFiles/AVP.dir/src/AVPPlanner.cpp.o
+ABC/CMakeFiles/TEST.dir/build.make:110: recipe for target 'ABC/CMakeFiles/TEST.dir/src/car.cpp.o' failed
+ABC/CMakeFiles/TEST.dir/build.make:134: recipe for target 'ABC/CMakeFiles/TEST.dir/src/hybridAStar.cpp.o' failed
+[ 83%] Linking CXX executable /media/psf/Home/Desktop/git/ICV-Competition/bin/AEB
+CMakeFiles/Makefile2:195: recipe for target 'ABC/CMakeFiles/TEST.dir/all' failed
+[ 83%] Built target AEB
+[ 91%] Linking CXX executable /media/psf/Home/Desktop/git/ICV-Competition/bin/AVP
+[ 91%] Built target AVP
+Makefile:83: recipe for target 'all' failed
