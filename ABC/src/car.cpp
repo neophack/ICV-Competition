@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <vector>
 
-#define MAX_ACC 15 //最大加速度
+#define MAX_ACC 2 //最大加速度
 
 namespace tool{
     double distance(double x1,double y1,double x2,double y2){

@@ -42,9 +42,13 @@ void getInd(const tool::Config &cfg,double x,double y,double yaw,tool::Ind &ind)
 }
 
 double hCost(const tool::Node &start,const tool::Node &end){ //这里随便写一个启发函数
+    double d = abs(end.yaw-start.yaw);
     double cost = pow(end.y-start.y,2) + pow(end.x-start.x,2);
-    if(cost <= DISTANCE*DISTANCE)
-        cost += ALPHA*(pow(end.yaw-start.yaw,2));
+    if(cost <= DISTANCE*DISTANCE) {
+        if(d > M_PI)
+            d = 2*M_PI - d;
+        cost += ALPHA * d*d;
+    }
     return SCALOR*sqrt(cost); //放大到目标点的重要性
 }
 
@@ -106,6 +110,12 @@ namespace tool{
         return cost;
     }
 
+    //判断是否在同一个格
+    bool inSameGrid(const Ind &a,const Ind &b){
+        //return a == b;
+        return a.x == b.x && a.y == b.y; //试一下不管角度有什么效果
+    }
+
     //由配置，当前车辆状态，上一个状态的前进方向，前轮转角为输入  通过参数返回上一个节点到新节点增加的cost 新节点 及新节点的ind
     void getNextNode(const Config &cfg,Car car,int lastDir,double steering,double &deltaCost,Node &node,Ind &ind){
         Ind tmp,curInd;
@@ -118,7 +128,7 @@ namespace tool{
         car.move(0,steering);
         getInd(cfg,car.x,car.y,car.psi,tmp);
         deltaCost = abs(car.v)*car.dt;
-        while(tmp == curInd){//走到下一个格子为止
+        while(inSameGrid(tmp,curInd)){//走到下一个格子为止
             car.move(0,steering);
             getInd(cfg,car.x,car.y,car.psi,tmp);
             deltaCost += abs(car.v)*car.dt;
