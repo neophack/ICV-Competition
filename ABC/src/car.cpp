@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <vector>
 
-#define MAX_ACC 2 //最大加速度
+#define MAX_ACC 15 //最大加速度
 
 namespace tool{
     double distance(double x1,double y1,double x2,double y2){
@@ -144,8 +144,15 @@ namespace tool{
         std::vector<double> dist;
 
         dist.reserve(path.size());
+
+        if(lastIndex >= path.size()-1)
+            return path.size() - 1;
+        int curD = path.d[lastIndex+1];
+        int maxI = lastIndex+1;
+        while(maxI < path.size() && path.d[maxI] == curD)
+            maxI ++;// 找到方向不变的最后一个坐标
         // 计算每一个路径点到车坐标的距离
-        for(int i=lastIndex;i < path.size();i++){
+        for(int i=lastIndex;i < maxI;i++){
             dist[i] = distance(path.x[i],path.y[i],x,y);
             if(dist[i] < minDis){
                 minDis = dist[i];
@@ -155,13 +162,23 @@ namespace tool{
 
         //这里开始minDis设置为最短预瞄距离
         minDis = k*v > dis? k*v:dis;
-        for(int i=minInd;i < path.size();i++)
+        for(int i=minInd;i < maxI;i++)
             if(dist[i] >= minDis) {
                 lastIndex = i;
                 return i;
             }
 
         return path.size() - 1;
+//        double minDis = k*v > dis?k*v:dis;
+//        double dist;
+//        for(int i=lastIndex;i<path.size();i++){
+//            dist = distance(path.x[i],path.y[i],x,y);
+//            if(dist >= minDis){
+//                lastIndex = i;
+//                return i;
+//            }
+//        }
+//        return path.size()-1;
     }
 
     Path::Path() {

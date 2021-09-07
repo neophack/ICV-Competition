@@ -12,16 +12,22 @@
 #include <iostream>
 #include <algorithm>
 #include <math.h>
+#include <time.h>
 
 #define ALPHA 1.5
-#define DISTANCE 5.0
-#define SCALOR 25.0
+#define DISTANCE 1.0
+#define SCALOR 5.0
 //上面这俩宏和启发函数有关
 
 #define DEBUG 0
 #define AFTERNEXT 0
 #define GETNEXTNODE 0
+//上面这几个调试相关
 #define MAXCOST 99999.9 //无法接受的代价
+#define TIMEOUT 15 //避免搜不到结果，设置一个超时时间 10s吧
+
+void PushNode(double x,double y,double yaw,double d);
+
 
 typedef struct mem{
     double cost;
@@ -112,8 +118,18 @@ namespace tool{
 
     //判断是否在同一个格
     bool inSameGrid(const Ind &a,const Ind &b){
-        //return a == b;
+//        return a.x == b.x && a.y == b.y && a.yaw == b.yaw;
         return a.x == b.x && a.y == b.y; //试一下不管角度有什么效果
+    }
+
+    //车沿某一方向移动一定距离
+    void moveCar(Car &car,double steering,double length){
+        double arc = 0.0;
+        double delta = abs(car.v * car.dt);
+        while(arc < length){
+            car.move(0,steering);
+            arc += delta;
+        }
     }
 
     //由配置，当前车辆状态，上一个状态的前进方向，前轮转角为输入  通过参数返回上一个节点到新节点增加的cost 新节点 及新节点的ind
@@ -125,14 +141,18 @@ namespace tool{
         printf("steering:%lf d:%lf\n",steering,car.v);
         printf("curInd:x:%d y:%d yaw:%d\n",curInd.x,curInd.y,curInd.yaw);
 #endif
-        car.move(0,steering);
+//        car.move(0,steering);
+//        getInd(cfg,car.x,car.y,car.psi,tmp);
+//        deltaCost = abs(car.v)*car.dt;
+//        while(inSameGrid(tmp,curInd)){//走到下一个格子为止
+//            car.move(0,steering);
+//            getInd(cfg,car.x,car.y,car.psi,tmp);
+//            deltaCost += abs(car.v)*car.dt;
+//        }
+//以上是原先的代码，貌似不太好用，改改吧
+        moveCar(car,steering,1.5*cfg.gridRes);
+        deltaCost = 1.5*cfg.gridRes;
         getInd(cfg,car.x,car.y,car.psi,tmp);
-        deltaCost = abs(car.v)*car.dt;
-        while(inSameGrid(tmp,curInd)){//走到下一个格子为止
-            car.move(0,steering);
-            getInd(cfg,car.x,car.y,car.psi,tmp);
-            deltaCost += abs(car.v)*car.dt;
-        }
         node.x = car.x;node.y = car.y;node.yaw = car.psi;node.dir = car.v;
         deltaCost += calcObsCost(car ,cfg);
         deltaCost += abs(cfg.steerCost * steering);
@@ -149,8 +169,9 @@ namespace tool{
     }
 
     bool hybridAStar(double x,double y,double yaw,double endx,double endy,double endYaw,const Config &cfg,Path &pth){
-        Node start,currentNode,end;
-        Ind endInd;
+        Node start,currentNode,end,minNode;
+        double minHCost = 9999999.9;
+        Ind endInd,minInd;
         Ind ind;
         std::map<Ind,Node> openList;
         std::map<Ind,Node> closeList;
@@ -181,6 +202,8 @@ namespace tool{
         openList[ind]=start;
         hp.push(new Mem(start.cost+hCost(start,end),ind));
 
+        time_t startTime = time(NULL);// 开始循环的时间
+
         while(!hp.empty()){
             temp = hp.top();
             hp.pop();
@@ -210,6 +233,20 @@ namespace tool{
             printf("******************************\n");
 
 #endif
+            if(hCost(currentNode,end) < minHCost){//记录下找过的到终点启发值最小的点
+                minHCost = hCost(currentNode,end);
+                minInd = ind;
+                minNode = currentNode;
+            }
+
+            if(time(NULL) - startTime > TIMEOUT){//超时了，直接返回到最小启发值的点的路径吧
+                while(!hp.empty()){//释放空间
+                    temp = hp.top();
+                    hp.pop();
+                    delete temp;
+                }
+                return getFinalPath(closeList, pth, minInd);
+            }
 
             if(ind == endInd) {
                 while(!hp.empty()){//释放空间
@@ -237,18 +274,27 @@ namespace tool{
                     nextNode.parent = ind;
                     nextNode.parentKappa = car.getKappa(steer);
 #if AFTERNEXT
-                    printf("after getNextNode:nextInd:x:%d y:%d yaw:%d\n",nextInd.x,nextInd.y,nextInd.yaw);
+                    printf("steer:%lf d:%d after getNextNode:nextInd:x:%d y:%d yaw:%d\n",steer,d,nextInd.x,nextInd.y,nextInd.yaw);
                     printf("in openList:\n");
                     for(auto it=openList.begin();it != openList.end();it++)
                         printf("key:x:%d y:%d yaw:%d\n",it->first.x,it->first.y,it->first.yaw);
                     printf("end\n");
+                    printf("in closeList:\n");
+                    for(auto it=closeList.begin();it != closeList.end();it++)
+                        printf("key:x:%d y:%d yaw:%d\n",it->first.x,it->first.y,it->first.yaw);
+                    printf("end\n");
                     printf("find:%d\n",openList.find(nextInd) == openList.end());
+                    printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 #endif
-                    if(openList.find(nextInd) == openList.end() || openList.find(nextInd)->second.cost > nextNode.cost){//加入openList
+                    auto item = openList.find(nextInd);
+                    if(item == openList.end() || item->second.cost + hCost(item->second,end) > nextNode.cost + hCost(nextNode,end)){//加入openList
 #if 0
-                        printf("not in:%d lessCost:%d\n", openList.find(nextInd) == openList.end(),
-                               openList.find(nextInd)->second.cost > nextNode.cost);
-                        //printf("here something was pushed. cost:%lf nextNodeCost:%lf hCost:%lf x:%d y:%d yaw:%d\n",nextNode.cost+hCost(nextNode,end),nextNode.cost,hCost(nextNode,end),nextInd.x,nextInd.y,nextInd.yaw);
+                        PushNode(nextNode.x,nextNode.y,nextNode.yaw,d);
+
+                        printf("not in:%d lessCost:%d\n", item == openList.end(),
+                               item->second.cost + hCost(item->second,end) > nextNode.cost + hCost(nextNode,end));
+                        printf("d:%d steer:%lf\n",d,steer);
+                        printf("here something was pushed. cost:%lf nextNodeCost:%lf hCost:%lf x:%d y:%d yaw:%d\n---------------------------\n",nextNode.cost+hCost(nextNode,end),nextNode.cost,hCost(nextNode,end),nextInd.x,nextInd.y,nextInd.yaw);
 #endif
                         openList[nextInd] = nextNode;
                         hp.push(new Mem(nextNode.cost+hCost(nextNode,end),nextInd));

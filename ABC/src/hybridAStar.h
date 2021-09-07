@@ -18,7 +18,7 @@ namespace tool {
         int x, y, yaw;
         ind(){x=0;y=0;yaw=0;}
         ind(int x,int y,int yaw){this->x=x;this->y=y;this->yaw=yaw;}
-        bool operator==(ind&b){return this->x==b.x && this->y==b.y && this->yaw == b.yaw;}
+        bool operator==(ind&b) const {return this->x==b.x && this->y==b.y && this->yaw == b.yaw;}
     } Ind;
 
     typedef struct conf {
@@ -46,7 +46,7 @@ namespace tool {
 
     //起点状态、终点状态、配置   注意这里返回的path是不带v和T的，也就是pth.v和pth.T还是空的
     bool hybridAStar(double x,double y,double yaw,double endx,double endy,double endYaw,const Config &cfg,Path &pth);
-
+    void getNextNode(const Config &cfg,Car car,int lastDir,double steering,double &deltaCost,Node &node,Ind &ind);
     void test();
 }
 #endif //CPP_HYBRIDASTAR_H

@@ -29,16 +29,16 @@ int main()
     tool::Car car(2.9187,1.85,3.9187,1,0.1);
     tool::Config cfg;
     tool::Obstacles obs;
-    bool pathReady = false;
-    cfg.gridRes = 0.5;
+    bool pathReady = false;bool stop = false;
+    cfg.gridRes = 0.3;
     cfg.yawRes = M_PI/12;
-    cfg.maxSteering = M_PI/5;
+    cfg.maxSteering = M_PI/3;
     cfg.NSteer = 48;
     cfg.car = car;
     cfg.obs = obs;
     cfg.obsCost = 15;
-    cfg.steerCost = 0.1;
-    cfg.switchBackCost = 150.0;
+    cfg.steerCost = 0.0;
+    cfg.switchBackCost = 0.0;
 
     tool::Path path;
     double startX=-100.404797,startY=-125.4392,startYaw=0,endX=-43.000835,endY=-60.390165,endYaw=M_PI/2;
@@ -93,6 +93,7 @@ int main()
                 pathReady = true;
             }
             car.setState(pGps->posX,pGps->posY,pGps->oriZ,speed);
+            car.setMaxSteering(M_PI/3);
             idx = car.calcIndex(path,lastIndex,1,0.05);
 			//acc = contr.getControl(speed);
 			if(speed <= 1.0)
@@ -100,7 +101,9 @@ int main()
 			else
 			    acc = -1;
 			steering = car.calcSteering(path.x[idx],path.y[idx]);
-			if(std::sqrt(std::pow(endY-pGps->posY,2)+std::pow(endX-pGps->posX,2)) <= 0.1)
+			if(std::sqrt(std::pow(endY-pGps->posY,2)+std::pow(endX-pGps->posX,2)) <= 0.5)
+			    stop = true;
+			if(stop)
 			    acc = -20.0;
 			setDriver(acc,steering,path.d[idx]);
 

@@ -39,6 +39,15 @@ namespace tool{
         Path();
         int size(){return x.size();}
         friend std::ostream &operator<<(std::ostream &out,Path path);
+        void push(double x,double y,double yaw,double T,double v,double kappa,int d){
+            this->x.push_back(x);
+            this->y.push_back(y);
+            this->yaw.push_back(yaw);
+            this->T.push_back(T);
+            this->v.push_back(v);
+            this->kappa.push_back(kappa);
+            this->d.push_back(d);
+        }
     };
 
     typedef struct obs{
