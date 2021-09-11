@@ -323,8 +323,7 @@ extern "C"
         @return
         *	Success or not
         */
-        SIMONE_NET_API bool GetSimOneVehicleState(SimOne_Data_Vehicle_Extra* pVehExtraState);
-
+        SIMONE_NET_API bool GetSimOneVehicleState(SimOne_Data_Vehicle_Extra* pVehExtraState); 
 		/*!
 		得到仿真场景中的物体的真值
 		\li function:
@@ -1365,7 +1364,7 @@ extern "C"
 		/*!
 		获取地图中信号灯列表
 		\li function:
-		*	GetTrafficLightList
+		*	GetTrafficoightList
 		\li brief:
 		*	Get traffic light list in the map.
 		@param[out]

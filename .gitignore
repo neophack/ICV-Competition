@@ -1,6 +1,7 @@
 /.vscode
+/.clangd
 /samples
-
-*.sh
-!build*.sh
-!release.sh
+*.zip
+/build/build_tmp
+.git
+/bin

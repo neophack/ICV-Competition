@@ -5,8 +5,11 @@
 #include "../HDMap/include/SampleGetNearMostLane.h"
 #include "../HDMap/include/SampleGetLaneST.h"
 
-#include <memory> #include <limits>
+#include <memory>
+#include <limits>
 #include <iostream>
+
+const double EPS = 0.5f;
 
 //Main function
 //
@@ -61,7 +64,8 @@ int main()
             for (size_t i = 0; i < pObstacle->obstacleSize; ++i) {
                 SSD::SimPoint3D obstaclePos(pObstacle->obstacle[i].posX, pObstacle->obstacle[i].posY, pObstacle->obstacle[i].posZ);
                 SSD::SimString obstacleLaneId = SampleGetNearMostLane(obstaclePos);
-                if (mainVehicleLaneId == obstacleLaneId) {
+                //if (mainVehicleLaneId == obstacleLaneId) {
+                if(std::abs(mainVehiclePos.x - obstaclePos.x) < EPS) {
                     //double obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
                     double obstacleDistance = std::abs(mainVehiclePos.x - obstaclePos.x);
 
@@ -130,9 +134,6 @@ int main()
                     double accel = std::pow((mainVehicleSpeed - obstacleSpeed), 2) / (2 * (minDistance - defaultDistance));
                     pControl->throttle = -accel;
                     SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Acceleration: %f,calculatedAccel: %f, distance: %f", pGps->accelX, accel, std::abs(minDistance));
-                }
-                if(inAEBState && timeToCollision > defaultDistance) {
-                    inAEBState = false;
                 }
             }	
             SimOneSM::SetDrive(0, pControl.get());

@@ -4,7 +4,7 @@ file(GLOB libs ${LIB_DIR}/*.*)
 
 add_executable(PredefinedRoute ${srcs})
 
-target_sources(PredefinedRoute PRIVATE "src/PreRouteMicuks.cpp" ${headers})
+target_sources(PredefinedRoute PRIVATE "src/EGearPreRoute.cpp" ${headers})
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${srcs})
 
