@@ -81,9 +81,17 @@ namespace tool{
     class Car{
         double wb,w,lf,lb;//前后轮距离  车宽  后轮到车最前方距离  后轮到车尾距离
         double maxSteering;
+
     public:
+        //下面这5个变量把轨迹跟踪封装进类里，以后就不需要手动调用calcIndex了
+        Path *pth;
+        int lastIndex;
+        double lastDis;//上一个跟踪点和车的距离
+        double k,dis; //这两设置预瞄距离用的
+
         double x,y,psi,v; // 坐标 航向角 速度
         double dt;// 采样时间间隔
+        int direction; //用getSteering时会根据找到的路径点设置这个值
 
         //设置车辆各个参数 轴距 车宽 后轮到车头 后轮到车尾 采样时间间隔
         Car(double wb = 3,double w=2,double lf = 3.3,double lb = 1,double dt = 0.1);
@@ -112,6 +120,18 @@ namespace tool{
         //返回一条路径中用PurePersuit 要找的下一个路径点下标
         // path：路径点 k:预瞄距离=k*v dis:最小预瞄距离
         int calcIndex(Path path,int &lastIndex,double k=0.1,double dis = 2.0);
+
+        //这俩参数意义和上面那个函数的k dis一样
+        void setK(double k=0.1,double dis =2.0){
+            this->k = k;
+            this->dis = dis;
+        }
+
+        //设置要跟踪的路径
+        void setPath(Path *pth);
+
+        //前面若用setPath设置好了path,直接调用这个函数得到方向盘转角
+        double getSteering();
 
         //返回前轮转角对应的曲率
         double getKappa(double delta) const{

@@ -15,7 +15,7 @@
 #include <time.h>
 
 #define ALPHA 1.5
-#define DISTANCE 1.0
+#define DISTANCE 6.0
 #define SCALOR 5.0
 //上面这俩宏和启发函数有关
 
@@ -24,9 +24,10 @@
 #define GETNEXTNODE 0
 //上面这几个调试相关
 #define MAXCOST 99999.9 //无法接受的代价
-#define TIMEOUT 15 //避免搜不到结果，设置一个超时时间 10s吧
+#define TIMEOUT 5 //避免搜不到结果，设置一个超时时间 10s吧
+#define EPSILON 1
 
-void PushNode(double x,double y,double yaw,double d);
+//void PushNode(double x,double y,double yaw,double d);  调试用的
 
 
 typedef struct mem{
@@ -239,7 +240,7 @@ namespace tool{
                 minNode = currentNode;
             }
 
-            if(time(NULL) - startTime > TIMEOUT){//超时了，直接返回到最小启发值的点的路径吧
+            if(time(NULL) - startTime > TIMEOUT || minHCost < EPSILON){//超时了，直接返回到最小启发值的点的路径吧 或者已经够好了
                 while(!hp.empty()){//释放空间
                     temp = hp.top();
                     hp.pop();

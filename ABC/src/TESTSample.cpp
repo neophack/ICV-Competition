@@ -27,22 +27,22 @@ int main()
 	//-------------------------------------------------------------
 	long long lastTimeStamp = 0;
     tool::Car car(2.9187,1.85,3.9187,1,0.1);
+    car.setMaxSteering(M_PI/3);
     tool::Config cfg;
     tool::Obstacles obs;
-    bool pathReady = false;bool stop = false;
+    bool pathReady = false;bool stop = false;bool toGo = false;
     cfg.gridRes = 0.3;
     cfg.yawRes = M_PI/12;
-    cfg.maxSteering = M_PI/3;
+    cfg.maxSteering = M_PI/4;
     cfg.NSteer = 48;
     cfg.car = car;
     cfg.obs = obs;
     cfg.obsCost = 15;
     cfg.steerCost = 0.0;
-    cfg.switchBackCost = 0.0;
+    cfg.switchBackCost = 0.5;
 
     tool::Path path;
-    double startX=-100.404797,startY=-125.4392,startYaw=0,endX=-43.000835,endY=-60.390165,endYaw=M_PI/2;
-    int lastIndex = 0;
+    double startX=-100.404797,startY=-125.4392,startYaw=0,endX=-84.47935,endY=-65.4569,endYaw=0;
     tool::pid contr(1,0.000001,0.001);
     contr = 1.0; //慢一点好
     //-------------------------------------------------------------
@@ -77,35 +77,45 @@ int main()
 				isSimOneInitialized = true;
 			}
             //-----------------------------------------------------------------------------------------------------------
-            int idx;
 			float acc;
 			double steering;
             double speed = UtilMath::calculateSpeed(pGps->velX,pGps->velY,pGps->velZ);
             startX = pGps->posX;startY = pGps->posY;startYaw = tool::pi_2_pi(pGps->oriZ);
-            if(!pathReady) {
+            if(lastTimeStamp == 0)
+                lastTimeStamp = pGps->timestamp;
+            if(!pathReady || pGps->timestamp-lastTimeStamp >= 1000) {
                 tool::hybridAStar(startX,startY,startYaw,endX,endY,endYaw,cfg,path);
-                SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError, "path ready!!!!!!!!!!!!----------");
+                SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError,
+                                           "start from(%lf,%lf,%lf) path ready!!!!!!!!!!!!----------",startX,startY,startYaw);
                 for (int i = 0; i < path.size(); i++) {
                     SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError, "x:%lf y:%lf yaw:%lf d:%d", path.x[i],
                                                path.y[i],
                                                path.yaw[i], path.d[i]);
                 }
                 pathReady = true;
+                car.setPath(&path);
+                car.setK(0.05,0.1);
+                lastTimeStamp = pGps->timestamp;
             }
+            steering = car.getSteering();
             car.setState(pGps->posX,pGps->posY,pGps->oriZ,speed);
-            car.setMaxSteering(M_PI/3);
-            idx = car.calcIndex(path,lastIndex,1,0.05);
-			//acc = contr.getControl(speed);
+
 			if(speed <= 1.0)
 			    acc = 1;
 			else
 			    acc = -1;
-			steering = car.calcSteering(path.x[idx],path.y[idx]);
-			if(std::sqrt(std::pow(endY-pGps->posY,2)+std::pow(endX-pGps->posX,2)) <= 0.5)
+			if(std::sqrt(std::pow(endY-pGps->posY,2)+std::pow(endX-pGps->posX,2)) <= 0.3)
 			    stop = true;
-			if(stop)
-			    acc = -20.0;
-			setDriver(acc,steering,path.d[idx]);
+			if(stop) {
+			    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning,"in stop state!!!!");
+                acc = -20.0;
+            }
+			if(pGps->timestamp - lastTimeStamp <= 10000 && !toGo) {
+                acc = -20.0;
+                toGo = true;
+            }
+            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning,"car direction:%d",car.direction);
+            setDriver(acc,steering,car.direction);
 
             //-----------------------------------------------------------------------------------------------------------
 		}

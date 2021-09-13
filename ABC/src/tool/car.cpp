@@ -50,6 +50,7 @@ namespace tool{
         this->lb = lb;
         this->dt = dt;
         this->maxSteering = M_PI / 6;
+        this->pth = NULL;
     }
 
     void Car::setState(double x, double y, double psi, double v) {
@@ -169,16 +170,70 @@ namespace tool{
             }
 
         return path.size() - 1;
-//        double minDis = k*v > dis?k*v:dis;
-//        double dist;
-//        for(int i=lastIndex;i<path.size();i++){
-//            dist = distance(path.x[i],path.y[i],x,y);
-//            if(dist >= minDis){
-//                lastIndex = i;
-//                return i;
-//            }
-//        }
-//        return path.size()-1;
+    }
+
+    void Car::setPath(Path *pth) {
+        this->pth = pth;
+        lastIndex = 0;
+        lastDis = -1.0;
+    }
+
+    double Car::getSteering() {
+        if(pth == NULL)//没设置过路径
+            return 0;
+//        printf("---------------get into getSteering---------------------\n");
+        double minDis = 99999999;
+        int minDisInd = -1;
+        int finalIndex = -1;
+        int i;
+        int curDir = pth->d[lastIndex]; //上一次追踪点的前进方向 用这个方向设定寻找范围
+        int maxIndex = lastIndex;
+        std::vector<double> dist;
+        while(pth->d[maxIndex] == curDir && maxIndex < pth->size()-1)
+            maxIndex ++;
+        dist.reserve(pth->size());
+        for(i=lastIndex;i <= maxIndex;i++){
+            dist[i] = distance(pth->x[i], pth->y[i], x, y);
+            if(dist[i] < minDis){
+                minDis = dist[i];
+                minDisInd = i;
+            }
+        }
+//        printf("maxIndex:%d minDis:%lf minDisIndex:%d\n", maxIndex,minDis,minDisInd);
+        //这里开始minDis设置为最短预瞄距离
+        minDis = this->k*v > this->dis ? this->k*v : this->dis;
+        if(abs(this->psi-pth->yaw[lastIndex]) >= M_PI / 12)
+            minDis = 0.8 * v;
+//        printf("minDis:%lf\n",minDis);
+        for(i=minDisInd;i <= maxIndex;i++){
+            if(dist[i] >= minDis){
+                if(i != lastIndex){
+//                    printf("i != lastIndex chose i:%d dist:%lf\n", i,dist[i]);
+                    finalIndex = i;
+                    lastDis = dist[i];
+                    lastIndex = i;
+                    break;
+                }
+                // i == lastIndex
+                if(lastDis < 0 || lastDis > dist[i]){
+//                    printf("i == lastIndex chose i:%d lastDis:%lf curDis:%lf\n",i,lastDis,dist[i]);
+                    finalIndex = i;
+                    lastDis = dist[i];
+                    lastIndex = i;
+                    break;
+                }
+            }
+        }
+        if(finalIndex == -1) {
+            finalIndex = maxIndex;
+            lastIndex = maxIndex;
+            lastDis = dist[maxIndex];
+        }
+//        printf("final index:%d car:(%lf,%lf) dis:%lf goal:(%lf,%lf) d:%d\n", finalIndex, this->x, this->y, this->lastDis,
+//               pth->x[finalIndex], pth->y[finalIndex],pth->d[finalIndex]);
+        this->direction = pth->d[finalIndex];
+//        printf("------end of get steering---------------\n\n");
+        return this->calcSteering(pth->x[finalIndex], pth->y[finalIndex]);
     }
 
     Path::Path() {
