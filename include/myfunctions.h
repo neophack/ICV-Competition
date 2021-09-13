@@ -25,9 +25,9 @@
 #include "SimOneNetAPI.h"
 
 namespace myfunctions {
-    int __my_count = 0;
-    bool LessMessage(int& cnt, ELogLevel_Type level, const char *format, ...) {
-        if(__my_count++ >= cnt) {
+    int __my_count = 0, _total_cnt = 10;
+    SIMONE_NET_API bool LessMessage(int _total_cnt, ELogLevel_Type level, const char *format, ...) {
+        if(__my_count++ >= _total_cnt) {
             __my_count = 0;
             return SimOneAPI::bridgeLogOutput(level, format);
         }

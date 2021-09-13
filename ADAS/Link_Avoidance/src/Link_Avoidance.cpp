@@ -4,7 +4,7 @@
 #include "utilStartSimOneNode.h"
 #include "../HDMap/include/SampleGetNearMostLane.h"
 #include "../HDMap/include/SampleGetLaneST.h"
-#include "myfunctions.hpp"
+#include "myfunctions.h"
 
 #include <memory> 
 #include <limits>
@@ -16,6 +16,7 @@ int main()
 {
 
     bool inAEBState = false;
+    bool inStopLineState = false;
     bool isSimOneInitialized = false;
     StartSimOne::WaitSimOneIsOk(true);
     SimOneSM::SetDriverName(0, "Link_Avoidance");
@@ -46,13 +47,14 @@ int main()
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "Fetch obstacle failed");
         }
 
-        std::unique_ptr<SimOne_Data_TrafficLight> psignallight = std::make_unique<SimOne_Data_TrafficLight>;
-        if(!SimOneAPI::GetTrafficLight(0, psignallight->opendriveLightId, psignallight)) {
-            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "Fetch TrafficLight Info Failed");
-        }
+        //std::unique_ptr<SimOne_Data_TrafficLight> psignallight = std::make_unique<SimOne_Data_TrafficLight>();
+        //if(!SimOneSM::GetTrafficLight(0, psignallight->opendriveLightId, psignallight)) {
+        //    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "Fetch TrafficLight Info Failed");
+        //}
 
         SSD::SimVector<HDMapStandalone::MSignal> SignalLightList;
-        if(!SimOneSM::GetTrafficLightList(SignalLightList)) {
+        SimOneSM::GetTrafficLightList(SignalLightList);
+        if(SignalLightList.size() < 1) {
             SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "Fetch SM::TrafficLight Failed.");
         }
 
@@ -72,15 +74,34 @@ int main()
             SSD::SimString mainVehicleLaneId = SampleGetNearMostLane(mainVehiclePos);
 
             double StopLineDistance;
+
+            double sMainVehicle;
+            double tMainVehicle;
+
+            double sStopLine;
+            double tStopLine;
+
+            bool isSignalLightRed = false;
+            bool isStopLineFront = false;
             SSD::SimVector<HDMapStandalone::MObject> StopLineList;
+            SimOneSM::GetLaneST(mainVehicleLaneId, mainVehiclePos, sMainVehicle, tMainVehicle);
             for(int i = 0; i < SignalLightList.size(); i++) {
-                if(SimOneSM::GetStoplineList(SignalLightList[i], mainVehicleLaneId, StopLineList)) {
+                myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelDebug, "LightId: %ld, LightValue: %s", SignalLightList[i].id, SignalLightList[i].value.GetString());
+                SimOneSM::GetStoplineList(SignalLightList[i], mainVehicleLaneId, StopLineList);
+                if (StopLineList.size() >= 1) {
                     for(int j = 0; j < StopLineList.size(); j++) {
                         SSD::SimPoint3D StopLinePos(StopLineList[j].pt.x, StopLineList[j].pt.y, StopLineList[j].pt.z);
                         StopLineDistance = UtilMath::planarDistance(mainVehiclePos, StopLinePos);
                         if(StopLineDistance < minStopLineDistance) {
+                            string _r = "red";
+                            if(SignalLightList[i].value.GetString() == _r)
+                                isSignalLightRed = true;
+                            else isSignalLightRed = false;
                             minStopLineDistance = StopLineDistance;
-                            minStopLineIndex = j;
+                            SSD::SimPoint3D minStopLinePos(StopLineList[j].pt.x, StopLineList[j].pt.y, StopLineList[j].pt.z);
+                            SimOneSM::GetLaneST(mainVehicleLaneId, minStopLinePos, sStopLine, tStopLine);
+                            isStopLineFront = !(sMainVehicle >= sStopLine);
+                            myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelDebug, "minStopLine(%f, %f, %f): %f", minStopLinePos.x, minStopLinePos.y, minStopLinePos.z, minStopLineDistance);
                         }
                     }
                 }
@@ -88,12 +109,13 @@ int main()
 
             SSD::SimString potentialObstacleLaneId = "";
             double safeDistance = 10.0f;
+            double obstacleDistance;
             for (size_t i = 0; i < pObstacle->obstacleSize; ++i) {
                 SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "ObstacleId = %d", pObstacle->obstacle[i].id);
 
                 SSD::SimPoint3D obstaclePos(pObstacle->obstacle[i].posX, pObstacle->obstacle[i].posY, pObstacle->obstacle[i].posZ);
                 SSD::SimString obstacleLaneId = SampleGetNearMostLane(obstaclePos);
-                double obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
+                obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
                 if (obstacleDistance <= safeDistance) {
                     myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelInformation, "planarDistance = %f", obstacleDistance);
                     if (obstacleDistance < minDistance) {
@@ -106,25 +128,21 @@ int main()
 
             auto& potentialObstacle = pObstacle->obstacle[potentialObstacleIndex];
             double obstacleSpeed = UtilMath::calculateSpeed(potentialObstacle.velX, potentialObstacle.velY, potentialObstacle.velZ);
-            myfunctions::LessMessage(ELogLevel_Type::ELogLevelDebug, "obstacleSpeedX = %f, SpeedY = %f, speedZ = %f", potentialObstacle.velX, potentialObstacle.velY, potentialObstacle.velZ);
+            myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelDebug, "obstacleSpeedX = %f, SpeedY = %f, speedZ = %f", potentialObstacle.velX, potentialObstacle.velY, potentialObstacle.velZ);
 
             SSD::SimPoint3D potentialObstaclePos(potentialObstacle.posX, potentialObstacle.posY, potentialObstacle.posZ);
             double sObstacle = 0;
             double tObstacle = 0;
-
-            double sMainVehicle = 0;
-            double tMainVehicle = 0;
 
             bool isObstacleFront = false;
             bool isObstacleGoAway = false;
             if (!potentialObstacleLaneId.Empty()) {
 
                 SimOneSM::GetLaneST(potentialObstacleLaneId, potentialObstaclePos, sObstacle, tObstacle);
-                SimOneSM::GetLaneST(mainVehicleLaneId, mainVehiclePos, sMainVehicle, tMainVehicle);
 
-                myfunctions::LessMessage(ELogLevel_Type::ELogLevelDebug, "ObstacleLaneId = %d", potentialObstacleLaneId);
-                myfunctions::LessMessage(ELogLevel_Type::ELogLevelDebug, "sMainVehicle = %f, tMainVehicle = %f", sMainVehicle, tMainVehicle);
-                myfunctions::LessMessage(ELogLevel_Type::ELogLevelDebug, "sObstacle = %f, tObstacle = %f", sObstacle, tObstacle);
+                myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelDebug, "ObstacleLaneId = %s", potentialObstacleLaneId.GetString());
+                myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelDebug, "sMainVehicle = %f, tMainVehicle = %f", sMainVehicle, tMainVehicle);
+                myfunctions::LessMessage(10, ELogLevel_Type::ELogLevelDebug, "sObstacle = %f, tObstacle = %f", sObstacle, tObstacle);
 
                 isObstacleFront = !(sMainVehicle >= sObstacle);
                 isObstacleGoAway = (obstacleDistance >= safeDistance);
@@ -167,28 +185,31 @@ int main()
                     inAEBState = false;
                 }
             }	
-            else if(!isObstacleGoAway) {
-                //EGear Mode
-                double timeToCollision = std::abs((minDistance - defaultDistance) / (obstacleSpeed - mainVehicleSpeed));
-                SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "TimeToCollision: %f", timeToCollision);
-                double defaultTimeToCollision = 2.4f;
+            if(isStopLineFront && !inAEBState) {
+                if((isSignalLightRed) || (!isObstacleGoAway && isObstacleFront)) {
+                    //EGear Mode
+                    double defaultDistance = 1.1f + 4.2f;
+                    double timeToCollision = std::abs((minStopLineDistance - defaultDistance) / (obstacleSpeed - mainVehicleSpeed));
+                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "TimeToCollision: %f", timeToCollision);
+                    double defaultTimeToCollision = 2.4f;
 
-                if (timeToCollision < defaultTimeToCollision && timeToCollision > 0) {
-                    inAEBState = true;
-                }
-                if (inAEBState) {
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "--- In AEB State ---");
-                    pControl->gear = EGearMode_Drive;
-                    pControl->throttleMode = EThrottleMode_Accel;
-                    pControl->isManualGear = 0;
-                    double accel = std::pow((mainVehicleSpeed - obstacleSpeed), 2) / (2 * (minDistance - defaultDistance));
-                    pControl->throttle = -accel;
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Acceleration: %f,calculatedAccel: %f, distance: %f", pGps->accelX, accel, std::abs(minDistance));
-                }
-                if(inAEBState && timeToCollision > defaultDistance) {
-                    inAEBState = false;
-                }
+                    if (timeToCollision < defaultTimeToCollision && timeToCollision > 0) {
+                        inStopLineState = true;
+                    }
+                    if (inStopLineState) {
+                        SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "--- To Stop at StopLint ---");
+                        pControl->gear = EGearMode_Drive;
+                        pControl->throttleMode = EThrottleMode_Accel;
+                        pControl->isManualGear = 0;
+                        double accel = std::pow((mainVehicleSpeed - obstacleSpeed), 2) / (2 * (minDistance - defaultDistance));
+                        pControl->throttle = -accel;
+                        SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Acceleration: %f,calculatedAccel: %f, distance: %f", pGps->accelX, accel, std::abs(minDistance));
+                    }
+                    if(inStopLineState && timeToCollision > defaultDistance) {
+                        inStopLineState = false;
+                    }
 
+                }
             }
             SimOneSM::SetDrive(0, pControl.get());
         }
