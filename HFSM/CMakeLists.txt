@@ -1,9 +1,9 @@
-add_executable(TEST "")
+add_executable(HFSM "")
 
 file(GLOB_RECURSE srcs *.hh *i *.hpp *.c *.cc *.cpp)
 file(GLOB_RECURSE headers *.h)
 
-target_sources(TEST PRIVATE ${srcs})
+target_sources(HFSM PRIVATE ${srcs})
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${srcs})
 
@@ -21,20 +21,20 @@ IF (MSVC)
     string(REPLACE "/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 ENDIF()
 
-SetDefaultTargetProperties(TEST)
+SetDefaultTargetProperties(HFSM)
 
 
-target_link_libraries(TEST debug ${LIB_DIR}/libSimOneIOAPI.so)
-target_link_libraries(TEST optimized ${LIB_DIR}/libSimOneIOAPI.so -lpthread)
-target_link_libraries(TEST debug ${LIB_DIR}/libSSD.so)
-target_link_libraries(TEST optimized ${LIB_DIR}/libSSD.so -lpthread)
-target_link_libraries(TEST debug ${LIB_DIR}/libHDMapModule.so)
-target_link_libraries(TEST optimized ${LIB_DIR}/libHDMapModule.so)
+target_link_libraries(HFSM debug ${LIB_DIR}/libSimOneIOAPI.so)
+target_link_libraries(HFSM optimized ${LIB_DIR}/libSimOneIOAPI.so -lpthread)
+target_link_libraries(HFSM debug ${LIB_DIR}/libSSD.so)
+target_link_libraries(HFSM optimized ${LIB_DIR}/libSSD.so -lpthread)
+target_link_libraries(HFSM debug ${LIB_DIR}/libHDMapModule.so)
+target_link_libraries(HFSM optimized ${LIB_DIR}/libHDMapModule.so)
 
-target_link_libraries(TEST debug /usr/lib/x86_64-linux-gnu/libcurl.so.4)
-target_link_libraries(TEST optimized /usr/lib/x86_64-linux-gnu/libcurl.so.4)
+target_link_libraries(HFSM debug /usr/lib/x86_64-linux-gnu/libcurl.so.4)
+target_link_libraries(HFSM optimized /usr/lib/x86_64-linux-gnu/libcurl.so.4)
 
-add_custom_command(TARGET TEST
+add_custom_command(TARGET HFSM
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${LIB_DIR}/libSimOneIOAPI.so ${BINARY_OUT_PATH}/libSimOneIOAPI.so
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${LIB_DIR}/libSSD.so ${BINARY_OUT_PATH}/libSSD.so
