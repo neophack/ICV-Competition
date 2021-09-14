@@ -16,9 +16,9 @@ SimString SampleGetNearMostLane(const SimPoint3D& pos)
 		return laneId;
 	}
 
-	SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "lane id: %s", laneId.GetString());
-	SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "[s: %f, t: %f]", s,t);
-	SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "[s_toCenterLine: %f, t_toCenterLine: %f]", s_toCenterLine, t_toCenterLine);
+	//SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "lane id: %s", laneId.GetString());
+	//SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "[s: %f, t: %f]", s,t);
+	//SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "[s_toCenterLine: %f, t_toCenterLine: %f]", s_toCenterLine, t_toCenterLine);
 	return laneId;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdarg>
 #ifdef BUILD_SIMONE_IO
 #if defined(WIN32) || defined(_WIN32)
 #define MY_FUNCTIONS __declspec(dllexport)
@@ -27,10 +28,13 @@
 namespace myfunctions {
     int __my_count = 0, _total_cnt = 10;
     SIMONE_NET_API bool LessMessage(int _total_cnt, ELogLevel_Type level, const char *format, ...) {
+        va_list args;
+        va_start(args, format);
         if(__my_count++ >= _total_cnt) {
             __my_count = 0;
-            return SimOneAPI::bridgeLogOutput(level, format);
+            return SimOneAPI::bridgeLogOutput(level, format, args);
         }
+        va_end(args);
         return 0;
     }
 }
