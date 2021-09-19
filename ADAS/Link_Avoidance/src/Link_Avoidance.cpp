@@ -14,7 +14,7 @@
 //
 int main()
 {
-    int __my_count = 0, _total_cnt = 10;
+    int __my_count = 0, _total_cnt = 20;
     bool inAEBState = false;
     bool inStopLineState = false;
     bool isSimOneInitialized = false;
@@ -58,7 +58,9 @@ int main()
                 SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelInformation, "SimOne Initialized!");
                 isSimOneInitialized = true;
             }
-            if(__my_count++ >= _total_cnt) __my_count = 0;
+
+            __my_count++;
+            if(__my_count >= _total_cnt) __my_count = 0;
 
             SSD::SimPoint3D mainVehiclePos(pGps->posX, pGps->posY, pGps->posZ);
             double mainVehicleSpeed = UtilMath::calculateSpeed(pGps->velX, pGps->velY, pGps->velZ);
@@ -80,16 +82,22 @@ int main()
 
             bool isSignalLightRed = false;
             bool isStopLineFront = false;
-            SSD::SimVector<HDMapStandalone::MObject> StopLineList;
+            
             SimOneSM::GetLaneST(mainVehicleLaneId, mainVehiclePos, sMainVehicle, tMainVehicle);
+            SSD::SimVector<HDMapStandalone::MObject> StopLineList;
             for(int i = 0; i < SignalLightList.size(); i++) {
-                if(!__my_count)
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "LightId: %ld, Value: %s, Type: %s, subType: %s, unit = %s", SignalLightList[i].id, SignalLightList[i].value.GetString(), SignalLightList[i].type.GetString(), SignalLightList[i].subType.GetString(), SignalLightList[i].unit.GetString());
+                //if(!__my_count)
+                    //SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "LightId: %ld, Value: %s, Type: %s, subType: %s, unit = %s", SignalLightList[i].id, SignalLightList[i].value.GetString(), SignalLightList[i].type.GetString(), SignalLightList[i].subType.GetString(), SignalLightList[i].unit.GetString());
                 SimOneSM::GetStoplineList(SignalLightList[i], mainVehicleLaneId, StopLineList);
                 if (StopLineList.size() >= 1) {
                     for(int j = 0; j < StopLineList.size(); j++) {
-                        SSD::SimPoint3D StopLinePos(StopLineList[j].pt.x, StopLineList[j].pt.y, StopLineList[j].pt.z);
-                        StopLineLaneId = SSD::SampleGetNearMostLane(StopLinePos);
+                        auto& thisStopLine = StopLineList[j];
+                        double tmppos[3];
+                        tmppos[0] = (thisStopLine.boundaryKnots[0].x + thisStopLine.boundaryKnots[1].x)/2;
+                        tmppos[1] = (thisStopLine.boundaryKnots[0].y + thisStopLine.boundaryKnots[1].y)/2;
+                        tmppos[2] = (thisStopLine.boundaryKnots[0].z + thisStopLine.boundaryKnots[1].z)/2;
+                        SSD::SimPoint3D StopLinePos(tmppos[0], tmppos[1], tmppos[2]);
+                        StopLineLaneId = SampleGetNearMostLane(StopLinePos);
                         StopLineDistance = UtilMath::planarDistance(mainVehiclePos, StopLinePos);
                         if(StopLineLaneId == mainVehicleLaneId && StopLineDistance < minStopLineDistance) {
                             isSignalLightRed = false;
@@ -113,7 +121,7 @@ int main()
                 SSD::SimString obstacleLaneId = SampleGetNearMostLane(obstaclePos);
                 obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
                 if (pObstacle->obstacle[i].type == 6 && obstacleDistance <= goAwayDistance) {
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "toCarDistance = %f", obstacleDistance);
+                    //SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "toCarDistance = %f", obstacleDistance);
                     if (obstacleDistance < minDistance) {
                         minDistance = obstacleDistance;
                         potentialObstacleIndex = (int)i;
@@ -160,25 +168,22 @@ int main()
             pControl->steering = 0;
             pControl->handbrake = 0;
             if(!inAEBState && !inStopLineState) {
-                SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "--- In Normal State ---");
-                double maxAcc = 8.0f;
-                double maxTime = 0.5f;
+                //SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelInformation, "--- In Normal State ---");
                 double targetSpeed = 11.11f;
-                double accel = 0;
                 pControl->gear = EGearMode_Drive;
-                pControl->brake = 0;
-                pControl->throttleMode = EThrottleMode_Accel;
+                pControl->throttleMode = EThrottleMode_Percent;
+                pControl->brakeMode = EBrakeMode_Percent;
                 pControl->isManualGear = 0;
                 double diffSpeed = targetSpeed - mainVehicleSpeed;
-                double diffSpeed = 3;
                 if(std::abs(diffSpeed) >= 2.78f) {
-                    accel = maxAcc;
+                    pControl->throttle = 1;
+                    pControl->brake = 0;
                 }
                 else {
-                    accel = diffSpeed / maxTime;
+                    pControl->throttle = 0;
+                    pControl->brake = 1;
                 }
-                SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelInformation, "Speed = %f, Accel = %f, calculatedAccel = %f", mainVehicleSpeed, pGps->accelX, accel);
-                pControl->throttle = accel;
+                //SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "speed = %f", mainVehicleSpeed);
             }
 
             if (isObstacleFront ) {
@@ -193,7 +198,7 @@ int main()
                     inAEBState = true;
                 }
                 if (inAEBState) {
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "--- In AEB State ---");
+                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelInformation, "--- In AEB State ---");
                     pControl->gear = EGearMode_Drive;
                     pControl->throttleMode = EThrottleMode_Accel;
                     pControl->isManualGear = 0;
@@ -224,7 +229,7 @@ int main()
                         inStopLineState = false;
                     }
                     if (inStopLineState) {
-                        SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "--- To Stop at StopLine ---");
+                        SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelInformation, "--- To Stop at StopLine ---");
                         pControl->gear = EGearMode_Drive;
                         pControl->throttleMode = EThrottleMode_Accel;
                         pControl->isManualGear = 0;
