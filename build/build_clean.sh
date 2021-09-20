@@ -5,9 +5,4 @@ if [ -d "build_tmp" ]; then
     rm -rf build_tmp
 fi
 
-if [ -d "../bin" ]; then
-    echo "Deleting bin..."
-    rm -rf ../bin
-fi
-
 echo "DONE"

@@ -38,7 +38,7 @@ IF (UNIX)
             TARGET PredefinedRoute
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CurrentLibFile} ${BINARY_OUT_PATH}
-            COMMENT "Copying lib: ${CurrentLibFile}"
+            #COMMENT "Copying lib: ${CurrentLibFile}"
             )
     endforeach()
 ENDIF()
