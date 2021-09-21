@@ -1305,8 +1305,7 @@ extern "C"
 		*   route: Generated route.
 		@return
 		*	True if any route has been generated, else returns false.
-		*/
-		SIMONE_NET_API bool GetPredefinedRoute(SSD::SimPoint3DVector& route);
+		*/ SIMONE_NET_API bool GetPredefinedRoute(SSD::SimPoint3DVector& route);
 
 		/*!
 		获取路网路径规划

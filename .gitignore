@@ -5,3 +5,4 @@
 /build/build_tmp
 .git
 /bin
+/.*
