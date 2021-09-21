@@ -2,9 +2,9 @@ file(GLOB_RECURSE srcs *.h *.hh *i *.hpp *.c *.cc *.cpp)
 file(GLOB_RECURSE headers *.h)
 file(GLOB libs ${LIB_DIR}/*.*)
 
-add_executable(PredefinedRoute ${srcs})
+add_executable(PR ${srcs})
 
-target_sources(PredefinedRoute PRIVATE "src/EGearPreRoute.cpp" ${headers})
+target_sources(PR PRIVATE "src/EGearPreRoute.cpp" ${headers})
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${srcs})
 
@@ -15,19 +15,19 @@ add_definitions(-DNOMINMAX)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-SetDefaultTargetProperties(PredefinedRoute)
+SetDefaultTargetProperties(PR)
 
 IF (UNIX)
-    target_link_libraries(PredefinedRoute debug ${LIB_DIR}/libSimOneIOAPI.so)
-    target_link_libraries(PredefinedRoute optimized ${LIB_DIR}/libSimOneIOAPI.so -lpthread)
-    target_link_libraries(PredefinedRoute debug /usr/lib/x86_64-linux-gnu/libcurl.so.4)
-    target_link_libraries(PredefinedRoute optimized /usr/lib/x86_64-linux-gnu/libcurl.so.4)
-    target_link_libraries(PredefinedRoute debug ${LIB_DIR}/libSSD.so)
-    target_link_libraries(PredefinedRoute optimized ${LIB_DIR}/libSSD.so -lpthread)
-    target_link_libraries(PredefinedRoute debug ${LIB_DIR}/libHDMapModule.so)
-    target_link_libraries(PredefinedRoute optimized ${LIB_DIR}/libHDMapModule.so)
+    target_link_libraries(PR debug ${LIB_DIR}/libSimOneIOAPI.so)
+    target_link_libraries(PR optimized ${LIB_DIR}/libSimOneIOAPI.so -lpthread)
+    target_link_libraries(PR debug /usr/lib/x86_64-linux-gnu/libcurl.so.4)
+    target_link_libraries(PR optimized /usr/lib/x86_64-linux-gnu/libcurl.so.4)
+    target_link_libraries(PR debug ${LIB_DIR}/libSSD.so)
+    target_link_libraries(PR optimized ${LIB_DIR}/libSSD.so -lpthread)
+    target_link_libraries(PR debug ${LIB_DIR}/libHDMapModule.so)
+    target_link_libraries(PR optimized ${LIB_DIR}/libHDMapModule.so)
 
-    add_custom_command(TARGET PredefinedRoute
+    add_custom_command(TARGET PR
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${LIB_DIR}/libSimOneIOAPI.so ${BINARY_OUT_PATH}/libSimOneIOAPI.so
         COMMAND ${CMAKE_COMMAND} -E copy_if_different  ${LIB_DIR}/libSSD.so ${BINARY_OUT_PATH}/libSSD.so
@@ -35,7 +35,7 @@ IF (UNIX)
         )
     foreach(CurrentLibFile IN LISTS libs)
         add_custom_command(
-            TARGET PredefinedRoute
+            TARGET PR
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CurrentLibFile} ${BINARY_OUT_PATH}
             #COMMENT "Copying lib: ${CurrentLibFile}"
