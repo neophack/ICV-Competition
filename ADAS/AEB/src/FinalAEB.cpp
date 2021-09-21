@@ -66,15 +66,12 @@ int main()
             for (size_t i = 0; i < pObstacle->obstacleSize; ++i) {
                 SSD::SimPoint3D obstaclePos(pObstacle->obstacle[i].posX, pObstacle->obstacle[i].posY, pObstacle->obstacle[i].posZ);
                 SSD::SimString obstacleLaneId = SampleGetNearMostLane(obstaclePos);
-                if (mainVehicleLaneId == obstacleLaneId) {
-                    //double obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
-                    double obstacleDistance = std::abs(mainVehiclePos.x - obstaclePos.x);
+                    double obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
 
                     if (obstacleDistance < minDistance) {
                         minDistance = obstacleDistance;
                         potentialObstacleIndex = (int)i;
                         potentialObstacleLaneId = obstacleLaneId;
-                    }
                 }
             }
 
@@ -125,7 +122,7 @@ int main()
             if (isObstacleFront) {
                 //EGear Mode
 
-                double defaultDistance = 5.2f + 1.1f;
+                double defaultDistance = 3.2f + 1.1f;
 
                 double timeToCollision = std::abs((minDistance - defaultDistance) / (obstacleSpeed - mainVehicleSpeed));
                 if(!count)
@@ -147,7 +144,7 @@ int main()
                         SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Acceleration: %f,calculatedAccel: %f, distance: %f", pGps->accelX, accel, std::abs(minDistance));
                     }
                 }
-                if(inAEBState && timeToCollision > defaultDistance && (obstacleSpeed - mainVehicleSpeed) > 1.0f) {
+                if(inAEBState && timeToCollision > defaultDistance) {
                     inAEBState = false;
                 }
             }	
