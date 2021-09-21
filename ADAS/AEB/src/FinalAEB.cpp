@@ -66,12 +66,13 @@ int main()
             for (size_t i = 0; i < pObstacle->obstacleSize; ++i) {
                 SSD::SimPoint3D obstaclePos(pObstacle->obstacle[i].posX, pObstacle->obstacle[i].posY, pObstacle->obstacle[i].posZ);
                 SSD::SimString obstacleLaneId = SampleGetNearMostLane(obstaclePos);
+                if(pObstacle->obstacle[i].type == ESimOne_Obstacle_Type_Pedestrian && (obstaclePos.y < 0.0f)) {
                     double obstacleDistance = UtilMath::planarDistance(mainVehiclePos, obstaclePos);
-
                     if (obstacleDistance < minDistance) {
                         minDistance = obstacleDistance;
                         potentialObstacleIndex = (int)i;
                         potentialObstacleLaneId = obstacleLaneId;
+                    }
                 }
             }
 
@@ -122,12 +123,12 @@ int main()
             if (isObstacleFront) {
                 //EGear Mode
 
-                double defaultDistance = 3.2f + 1.1f;
+                double defaultDistance = 4.2f + 1.1f;
 
-                double timeToCollision = std::abs((minDistance - defaultDistance) / (obstacleSpeed - mainVehicleSpeed));
+                double timeToCollision = std::abs((minDistance - defaultDistance) / (- mainVehicleSpeed));
                 if(!count)
                     SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "TimeToCollision: %f", timeToCollision);
-                double defaultTimeToCollision = 1.4f;
+                double defaultTimeToCollision = 2.4f;
 
                 if (timeToCollision < defaultTimeToCollision && timeToCollision > 0) {
                     inAEBState = true;
@@ -138,7 +139,7 @@ int main()
                     pControl->gear = EGearMode_Drive;
                     pControl->throttleMode = EThrottleMode_Accel;
                     pControl->isManualGear = 0;
-                    double accel = std::pow((mainVehicleSpeed - obstacleSpeed), 2) / (2 * (minDistance - defaultDistance));
+                    double accel = std::pow((mainVehicleSpeed ), 2) / (2 * (minDistance - defaultDistance));
                     pControl->throttle = -accel;
                     if(!count) {
                         SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Acceleration: %f,calculatedAccel: %f, distance: %f", pGps->accelX, accel, std::abs(minDistance));
