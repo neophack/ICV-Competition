@@ -14,6 +14,33 @@
 #include "car.h"
 #include "hybridAStar.h"
 #include "PID.h"
+#include "obstacle.h"
+#include "path.h"
+#include "HDmap.h"
+
+void printStaticObs(SimOne_Data_Gps *gps,const tool::Obstacles &obs){
+    int size;
+    tool::Obstacle **p = obs.getObsRange(gps->posX,gps->posY,999.9,size);
+    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "---------printStaticObs---------------");
+    for(int i=0;i<size;i++){
+        SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "%d:(%lf,%lf) width:%lf length:%lf yaw:%lf", i, p[i]->x, p[i]->y, p[i]->width,
+                                   p[i]->length, p[i]->yaw);
+    }
+    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "---------end of printStaticObs---------------");
+}
+
+void printDynamicObs(const path::DynamicObstacles &dyObs){
+    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "---------printDynamicObs---------------");
+
+    for(int i=0;i<dyObs.dyObs.size();i++){
+        SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "%d(%lf,%lf):(%lf,%lf) width:%lf length:%lf yaw:%lf", i,dyObs.dyObs[i]->vx,dyObs.dyObs[i]->vy,
+                                   dyObs.dyObs[i]->obs.x, dyObs.dyObs[i]->obs.y, dyObs.dyObs[i]->obs.width,
+                                   dyObs.dyObs[i]->obs.length, dyObs.dyObs[i]->obs.yaw);
+    }
+
+    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "---------end of printStaticObs---------------");
+
+}
 
 //Main function
 //
@@ -25,26 +52,7 @@ int main()
 	StartSimOne::WaitSimOneIsOk(true);
 	SimOneSM::SetDriverName(0, "TEST");
 	//-------------------------------------------------------------
-	long long lastTimeStamp = 0;
-    tool::Car car(2.9187,1.85,3.9187,1,0.1);
-    car.setMaxSteering(M_PI/3);
-    tool::Config cfg;
-    tool::Obstacles obs;
-    bool pathReady = false;bool stop = false;bool toGo = false;
-    cfg.gridRes = 0.3;
-    cfg.yawRes = M_PI/12;
-    cfg.maxSteering = M_PI/4;
-    cfg.NSteer = 48;
-    cfg.car = car;
-    cfg.obs = obs;
-    cfg.obsCost = 15;
-    cfg.steerCost = 0.0;
-    cfg.switchBackCost = 0.5;
-
-    tool::Path path;
-    double startX=-100.404797,startY=-125.4392,startYaw=0,endX=-84.47935,endY=-65.4569,endYaw=0;
-    tool::pid contr(1,0.000001,0.001);
-    contr = 1.0; //慢一点好
+    long long lastTimeStamp = 0;
     //-------------------------------------------------------------
 	int timeout = 20;
 	while (true) {
@@ -77,45 +85,23 @@ int main()
 				isSimOneInitialized = true;
 			}
             //-----------------------------------------------------------------------------------------------------------
-			float acc;
-			double steering;
-            double speed = UtilMath::calculateSpeed(pGps->velX,pGps->velY,pGps->velZ);
-            startX = pGps->posX;startY = pGps->posY;startYaw = tool::pi_2_pi(pGps->oriZ);
-            if(lastTimeStamp == 0)
-                lastTimeStamp = pGps->timestamp;
-            if(!pathReady || pGps->timestamp-lastTimeStamp >= 1000) {
-                tool::hybridAStar(startX,startY,startYaw,endX,endY,endYaw,cfg,path);
-                SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError,
-                                           "start from(%lf,%lf,%lf) path ready!!!!!!!!!!!!----------",startX,startY,startYaw);
-                for (int i = 0; i < path.size(); i++) {
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelError, "x:%lf y:%lf yaw:%lf d:%d", path.x[i],
-                                               path.y[i],
-                                               path.yaw[i], path.d[i]);
-                }
-                pathReady = true;
-                car.setPath(&path);
-                car.setK(0.05,0.1);
-                lastTimeStamp = pGps->timestamp;
+            if(pGps->timestamp - lastTimeStamp >= 2000){
+//                auto *dyObs = new path::DynamicObstacles;
+//                auto *obs = new tool::Obstacles;
+//                interface::getAllObstacles(*obs,*dyObs);
+//
+//                printStaticObs(pGps.get(),*obs);
+//                printDynamicObs(*dyObs);
+//
+//                obs->destroy();
+//                delete dyObs;
+//                delete obs;
+                interface::lane l;
+                double s,t;
+                interface::getLaneInfoFromGps(pGps.get(),l,s,t);
+                SimOneAPI::bridgeLogOutput(ELogLevelDebug, "(%d,%d,%d)>>>s:%lf t:%lf", l.roadID, l.sectionInd, l.laneID,
+                                           s, t);
             }
-            steering = car.getSteering();
-            car.setState(pGps->posX,pGps->posY,pGps->oriZ,speed);
-
-			if(speed <= 1.0)
-			    acc = 1;
-			else
-			    acc = -1;
-			if(std::sqrt(std::pow(endY-pGps->posY,2)+std::pow(endX-pGps->posX,2)) <= 0.3)
-			    stop = true;
-			if(stop) {
-			    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning,"in stop state!!!!");
-                acc = -20.0;
-            }
-			if(pGps->timestamp - lastTimeStamp <= 10000 && !toGo) {
-                acc = -20.0;
-                toGo = true;
-            }
-            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning,"car direction:%d",car.direction);
-            setDriver(acc,steering,car.direction);
 
             //-----------------------------------------------------------------------------------------------------------
 		}

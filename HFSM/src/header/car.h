@@ -14,9 +14,9 @@
 
 #include "kdtree.h"
 
-#define SOLID_POINT 0
-#define POINT 2
-#define OBSTACLE 1
+#define SOLID_POINT 0 // 不能碰的点
+#define POINT 2  //尽量不要碰的点
+#define OBSTACLE 1 // 不能碰的有形状的障碍物
 
 //WB = 3.  # rear to front wheel
 //W = 2.  # width of car
@@ -37,7 +37,7 @@ namespace tool{
         std::vector<double> kappa;//该点曲率
         std::vector<int> d;//方向，1为前进，-1为后退
         Path();
-        int size(){return x.size();}
+        int size()const {return x.size();};
         friend std::ostream &operator<<(std::ostream &out,Path path);
         void push(double x,double y,double yaw,double T,double v,double kappa,int d){
             this->x.push_back(x);
@@ -47,6 +47,29 @@ namespace tool{
             this->v.push_back(v);
             this->kappa.push_back(kappa);
             this->d.push_back(d);
+        }
+
+        //清空元素
+        void clear(){
+            x.clear();
+            y.clear();
+            yaw.clear();
+            T.clear();
+            v.clear();
+            kappa.clear();
+            d.clear();
+        }
+
+        //注意这个重载的运算符
+        //如 pth1 <<= pth2 实际上相当于是交换两个Path
+        void operator<<=(Path &pth){
+            this->x.swap(pth.x);
+            this->y.swap(pth.y);
+            this->yaw.swap(pth.yaw);
+            this->T.swap(pth.T);
+            this->v.swap(pth.v);
+            this->kappa.swap(pth.kappa);
+            this->d.swap(pth.d);
         }
     };
 
@@ -92,6 +115,7 @@ namespace tool{
         double x,y,psi,v; // 坐标 航向角 速度
         double dt;// 采样时间间隔
         int direction; //用getSteering时会根据找到的路径点设置这个值
+        double refVel; //参考速度，用getSteering时会根据找到的路径点设置这个值
 
         //设置车辆各个参数 轴距 车宽 后轮到车头 后轮到车尾 采样时间间隔
         Car(double wb = 3,double w=2,double lf = 3.3,double lb = 1,double dt = 0.1);

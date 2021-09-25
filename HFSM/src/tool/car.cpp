@@ -90,7 +90,7 @@ namespace tool{
     bool Car::checkLineCol(double x1, double y1, double x2, double y2) const {
         double x,y; // 生成两点之间的点(x,y)
 
-        for(double a=0;a <= 1;a=a+0.01){
+        for(double a=0.0;a <= 1.0;a=a+0.01){
             x = a*x1 + (1-a)*x2;
             y = a*y1 + (1-a)*y2;
             if(checkPointCol(x,y))
@@ -232,6 +232,7 @@ namespace tool{
 //        printf("final index:%d car:(%lf,%lf) dis:%lf goal:(%lf,%lf) d:%d\n", finalIndex, this->x, this->y, this->lastDis,
 //               pth->x[finalIndex], pth->y[finalIndex],pth->d[finalIndex]);
         this->direction = pth->d[finalIndex];
+        this->refVel = pth->v[finalIndex];
 //        printf("------end of get steering---------------\n\n");
         return this->calcSteering(pth->x[finalIndex], pth->y[finalIndex]);
     }

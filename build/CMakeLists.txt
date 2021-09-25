@@ -31,8 +31,8 @@ function(SetDefaultTargetProperties target)
 endfunction()
 
 # subprojects
-# add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB AEB)
-# add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AVP AVP)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB AEB)
+#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AVP AVP)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ABC ABC)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../HFSM HFSM)
 
