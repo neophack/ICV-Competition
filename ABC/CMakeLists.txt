@@ -11,6 +11,7 @@ include_directories("${INCLUDE_DIR}")
 include_directories(./src/kdtree)
 include_directories(./src/header)
 include_directories(./src/interface)
+include_directories(./src/rs)
 
 
 add_definitions(-DNOMINMAX)
