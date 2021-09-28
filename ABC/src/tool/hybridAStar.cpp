@@ -3,6 +3,7 @@
 //
 #include "car.h"
 #include "hybridAStar.h"
+#include "rs.h"
 
 #include <cmath>
 #include <vector>
@@ -50,7 +51,8 @@ void getInd(const tool::Config &cfg,double x,double y,double yaw,tool::Ind &ind)
 
 double hCost(const tool::Node &start,const tool::Node &end){ //这里随便写一个启发函数
     double d = abs(end.yaw-start.yaw);
-    double cost = pow(end.y-start.y,2) + pow(end.x-start.x,2);
+    auto rs = new ReedsSheppStateSpace;
+    double cost = rs->distance(start,end);
     if(cost <= DISTANCE*DISTANCE) {
         if(d > M_PI)
             d = 2*M_PI - d;
