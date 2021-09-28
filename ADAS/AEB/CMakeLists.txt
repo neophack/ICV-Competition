@@ -1,25 +1,25 @@
 file(GLOB_RECURSE SRCS *.h *.hh *i *.hpp *.c *.cc *.cpp)
-add_executable(AEB ${SRCS})
+add_executable(PR ${SRCS})
 
 include_directories("${INCLUDE_DIR}")
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES ${SRCS})
 
-setdefaulttargetproperties(AEB)
+setdefaulttargetproperties(PR)
 
 add_definitions(-DNOMINMAX)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-target_link_libraries(AEB debug ${LIB_DIR}/libSimOneIOAPI.so)
-target_link_libraries(AEB optimized ${LIB_DIR}/libSimOneIOAPI.so -lpthread)
-target_link_libraries(AEB debug ${LIB_DIR}/libSSD.so)
-target_link_libraries(AEB optimized ${LIB_DIR}/libSSD.so -lpthread)
-target_link_libraries(AEB debug ${LIB_DIR}/libHDMapModule.so)
-target_link_libraries(AEB optimized ${LIB_DIR}/libHDMapModule.so)
+target_link_libraries(PR debug ${LIB_DIR}/libSimOneIOAPI.so)
+target_link_libraries(PR optimized ${LIB_DIR}/libSimOneIOAPI.so -lpthread)
+target_link_libraries(PR debug ${LIB_DIR}/libSSD.so)
+target_link_libraries(PR optimized ${LIB_DIR}/libSSD.so -lpthread)
+target_link_libraries(PR debug ${LIB_DIR}/libHDMapModule.so)
+target_link_libraries(PR optimized ${LIB_DIR}/libHDMapModule.so)
 
 add_custom_command(
-  TARGET AEB
+  TARGET PR
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIB_DIR}/libSimOneIOAPI.so
           ${BINARY_OUT_PATH}/libSimOneIOAPI.so

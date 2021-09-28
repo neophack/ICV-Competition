@@ -15,7 +15,7 @@ int main()
 {
 
     int count = 0, totalcount = 5;
-    double targetSpeed = 8.333f;
+    double targetSpeed = 13.888888f;
     bool inAEBState = false;
     bool isSimOneInitialized = false;
     StartSimOne::WaitSimOneIsOk(true);

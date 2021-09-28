@@ -33,9 +33,9 @@ function(SetDefaultTargetProperties target)
 endfunction()
 
 # subprojects
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB AEB)
+#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB_Obstacle_avoidance AEB)
 #add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AVP AVP)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AutoPilot PR)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB PR)
 #add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/Link_Avoidance Link_Avoidance)
 #add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/LKA LKA)
-#add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB_Follow_Front_Car AEB_Follow_Front_Car)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../ADAS/AEB_Follow_Front_Car AEB)

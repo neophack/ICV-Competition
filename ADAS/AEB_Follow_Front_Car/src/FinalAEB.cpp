@@ -15,7 +15,7 @@ int main()
 {
 
     int count = 0, totalcount = 5;
-    double targetSpeed = 8.333f;
+    double targetSpeed = 8.333333f;
     bool inAEBState = false;
     bool isSimOneInitialized = false;
     StartSimOne::WaitSimOneIsOk(true);
@@ -105,7 +105,7 @@ int main()
             std::unique_ptr<SimOne_Data_Control> pControl = std::make_unique<SimOne_Data_Control>();
 
             // Control mainVehicle with SimOneDriver
-            //SimOneSM::GetDriverControl(0, pControl.get());
+            SimOneSM::GetDriverControl(0, pControl.get());
 
             // Control mainVehicle without SimOneDriver
             pControl->throttleMode = EThrottleMode_Percent;
@@ -117,7 +117,7 @@ int main()
                 pControl->throttle = 1;
                 pControl->brake = 0;
             }
-            pControl->steering = 0;
+            //pControl->steering = 0;
             pControl->handbrake = 0;
             pControl->isManualGear = 0;
             pControl->gear = EGearMode_Drive;
