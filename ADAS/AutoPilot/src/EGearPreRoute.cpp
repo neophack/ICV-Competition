@@ -106,6 +106,7 @@ int main()
 {
     StartSimOne::WaitSimOneIsOk(true);
     SimOneSM::SetDriverName(0, "MicuksPreDeRo");
+
     //Wait for the Sim-One case to run
     while (1) {
         int frame = SimOneAPI::Wait();
