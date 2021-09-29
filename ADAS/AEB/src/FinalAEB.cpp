@@ -64,12 +64,14 @@ void UpdateRoute(SSD::SimPoint3D mainVehiclePos, SSD::SimPoint3D potentialObstac
         SSD::SimString mainVehicleLaneId = SampleGetNearMostLane(mainVehiclePos);
         SSD::SimString targetLaneId =
             SampleGetNearMostLane(mInfo.centerLine.front());
-        if(isNearLanes(mainVehicleLaneId.GetString(), targetLaneId.GetString())) {
+        HDMapStandalone::MLaneType targetLaneType;
+        SimOneSM::GetLaneType(targetLaneId, targetLaneType);
+        if(targetLaneType == MLaneType::driving && isNearLanes(mainVehicleLaneId.GetString(), targetLaneId.GetString())) {
             //两条Lane相邻
-            SimOneAPI::bridgeLogOutput(
-                ELogLevel_Type::ELogLevelDebug,
-                "mainVehicleLaneId = %s, mInfoLaneId = %s",
-                mainVehicleLaneId.GetString(), mInfo.laneName.GetString());
+            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "centerLine.y = %f", mInfo.centerLine.front().y);
+            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug,
+                "mainVehicleLaneId = %s, targetLaneId = %s",
+                mainVehicleLaneId.GetString(), targetLaneId.GetString());
             break;
         }
     }
@@ -85,9 +87,8 @@ void UpdateRoute(SSD::SimPoint3D mainVehiclePos, SSD::SimPoint3D potentialObstac
     //    }
     //}
 
-    // SSD::SimPoint3D targetPointPos(mainVehiclePos.x + 10,
-    // mInfo.centerLine.front().y, mInfo.centerLine.front().z);
-    SSD::SimPoint3D targetPointPos(mainVehiclePos.x + 10, -1.76f, mInfo.centerLine.front().z);
+    SSD::SimPoint3D targetPointPos(mainVehiclePos.x + 10, -1.7f, mInfo.centerLine.front().z);
+    SSD::SimPoint3D keepPointPos(targetPointPos.x + 10, targetPointPos.y, targetPointPos.z);
     SimOneAPI::bridgeLogOutput(
         ELogLevel_Type::ELogLevelDebug,
         "targetPointPos(%f, %f, %f), mainVehiclePos(%f, %f, %f)",
@@ -96,6 +97,7 @@ void UpdateRoute(SSD::SimPoint3D mainVehiclePos, SSD::SimPoint3D potentialObstac
 
     inputPoints.push_back(mainVehiclePos);
     inputPoints.push_back(targetPointPos);
+    inputPoints.push_back(keepPointPos);
     SimOneSM::GenerateRoute(inputPoints, indexOfValidPoints, route);
     SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "route.size = %d", route.size());
     for(int i = 0; i < route.size(); i++) {
@@ -134,7 +136,7 @@ void getTargetPath(const SSD::SimPoint3D pos, SSD::SimPoint3DVector &route) {
 }
 
 double calculateSteering(const SSD::SimPoint3DVector& targetPath, SimOne_Data_Gps *pGps, int& lastTargetPathIndex) {
-  SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Gps(%f, %f, %f)",
+    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "Gps(%f, %f, %f)",
                              pGps->posX, pGps->posY, pGps->posZ);
 
     std::vector<float> pts;
@@ -151,6 +153,7 @@ double calculateSteering(const SSD::SimPoint3DVector& targetPath, SimOne_Data_Gp
     while (1) {
         if (index >= lastTargetPathIndex) {
             lastTargetPathIndex = index;
+            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "lastTargetPathIndex = index = %d", lastTargetPathIndex);
             break;
         }
         else {
@@ -162,7 +165,7 @@ double calculateSteering(const SSD::SimPoint3DVector& targetPath, SimOne_Data_Gp
     }
 
     int forwardIndex = 0;
-    float minProgDist = 5.f;
+    float minProgDist = 1.f;
     float progTime = 0.8f;
     float mainVehicleSpeed = sqrtf(pGps->velX * pGps->velX + pGps->velY * pGps->velY + pGps->velZ * pGps->velZ);
     float progDist = mainVehicleSpeed * progTime > minProgDist ? mainVehicleSpeed * progTime : minProgDist;
@@ -226,7 +229,6 @@ int main() {
     SSD::SimPoint3D pos(Gps.posX, Gps.posY, Gps.posZ);
     getTargetPath(pos, route);
 
-    int lastTargetPathIndex = -1;
 
     while (true) {
         int frame = SimOneAPI::Wait();
@@ -253,6 +255,7 @@ int main() {
         SSD::SimPoint3D mainVehiclePos(pGps->posX, pGps->posY, pGps->posZ);
         double mainVehicleSpeed = UtilMath::calculateSpeed(pGps->velX, pGps->velY, pGps->velZ);
 
+        double safeDistance = 10.0f;
         double minDistance = std::numeric_limits<double>::max();
         int potentialObstacleIndex = pObstacle->obstacleSize;
         SSD::SimString mainVehicleLaneId = SampleGetNearMostLane(mainVehiclePos);
@@ -274,8 +277,15 @@ int main() {
         double obstacleSpeed = UtilMath::calculateSpeed(potentialObstacle.velX, potentialObstacle.velY, potentialObstacle.velZ);
         //SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "obstacleSpeedX = %f, SpeedY = %f, speedZ = %f", potentialObstacle.velX, potentialObstacle.velY, potentialObstacle.velZ);
 
+        SSD::SimPoint3D potentialObstaclePos(potentialObstacle.posX,
+                                             potentialObstacle.posY,
+                                             potentialObstacle.posZ);
 
-        SSD::SimPoint3D potentialObstaclePos(potentialObstacle.posX, potentialObstacle.posY, potentialObstacle.posZ);
+        SimOne_Data_Gps Gps = SimOne_Data_Gps();
+        if(!SimOneAPI::GetSimOneGps(&Gps)) {
+            SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "Fetch Gps Failed! -L:247");
+        }
+
         double sObstacle = 0;
         double tObstacle = 0;
 
@@ -284,7 +294,7 @@ int main() {
 
         bool isObstacleFront = false;
         double steering = 0.0f;
-        if (!isGeneratedRoute && !potentialObstacleLaneId.Empty()) {
+        if (minDistance <= safeDistance && !isGeneratedRoute && !potentialObstacleLaneId.Empty()) {
 
             SampleGetLaneST(potentialObstacleLaneId, potentialObstaclePos, sObstacle, tObstacle);
             SampleGetLaneST(mainVehicleLaneId, mainVehiclePos, sMainVehicle, tMainVehicle);
@@ -294,16 +304,16 @@ int main() {
 
             isObstacleFront = !(sMainVehicle >= sObstacle);
             if(isObstacleFront) {
-                SimOne_Data_Gps Gps = SimOne_Data_Gps();
-                if(!SimOneAPI::GetSimOneGps(&Gps)) {
-                    SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelWarning, "Fetch Gps Failed! -L:247");
-                }
                 UpdateRoute(mainVehiclePos, potentialObstaclePos, route);
                 isGeneratedRoute = true;
             }
         }
 
-        steering = calculateSteering(route, &Gps, lastTargetPathIndex);
+        steering = 0;
+        if (isGeneratedRoute) {
+            static int lastTargetPathIndex = -1;
+            steering = calculateSteering(route, &Gps, lastTargetPathIndex);
+        }
 
         std::unique_ptr<SimOne_Data_Control> pControl = std::make_unique<SimOne_Data_Control>();
 
