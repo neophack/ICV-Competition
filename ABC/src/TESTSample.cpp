@@ -27,6 +27,20 @@ int main()
     car.setMaxSteering(M_PI/3);
     tool::Config cfg;
     tool::Obstacles obs;
+    tool::Obstacle ob;
+    ob.type = OBSTACLE;
+    ob.x = 5;
+    ob.y = 5;
+    ob.length = 3;
+    ob.width = 3;
+    ob.yaw = 0;
+    obs.insertObs(ob);
+    ob.x = 8;
+    ob.y = 4;
+    obs.insertObs(ob);
+    ob.x = 3;
+    ob.y = 8;
+    obs.insertObs(ob);
     bool pathReady = false;bool stop = false;bool toGo = false;
     cfg.gridRes = 0.3;
     cfg.yawRes = M_PI/12;
@@ -39,16 +53,14 @@ int main()
     cfg.switchBackCost = 0.5;
 
     tool::Path path;
-    double startX=-100.404797,startY=-125.4392,startYaw=0,endX=-84.47935,endY=-65.4569,endYaw=0;
+    double startX=0,startY=0,startYaw=0,endX=10,endY=15,endYaw=M_PI_2;
     tool::pid contr(1,0.000001,0.001);
     contr = 1.0; //慢一点好
     //-------------------------------------------------------------
-
-    tool::hybridAStar(0.0,0.0,0.0,10.0,10.0,M_PI_2,cfg,path);
+    tool::hybridAStar(startX,startY,startYaw,endX,endY,endYaw,cfg,path);
 
     for(int i=0;i<path.size();i++){
         cout<<path.x[i]<<' '<<path.y[i]<<' '<<path.yaw[i]<<'\n';
     }
-
 	return 0;
 }
