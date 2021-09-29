@@ -7,6 +7,3 @@
 .idea
 *.zip
 
-*.sh
-!build*.sh
-!release.sh
