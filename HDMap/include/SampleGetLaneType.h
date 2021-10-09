@@ -16,123 +16,123 @@ void SampleGetLaneType(const SimString& laneId)
 	std::string typeStr;
 	switch (type)
 	{
-		case MLaneType::none:
+		case HDMapStandalone::MLaneType::none:
 		{
-			typeStr = "MLaneType::none";
+			typeStr = "HDMapStandalone::MLaneType::none";
 		}
 		break;
-		case MLaneType::driving:
+		case HDMapStandalone::MLaneType::driving:
 		{
-			typeStr = "MLaneType::driving";
+			typeStr = "HDMapStandalone::MLaneType::driving";
 		}
 		break;
-		case MLaneType::stop:
+		case HDMapStandalone::MLaneType::stop:
 		{
-			typeStr = "MLaneType::stop";
+			typeStr = "HDMapStandalone::MLaneType::stop";
 		}
 		break;
-		case MLaneType::shoulder:
+		case HDMapStandalone::MLaneType::shoulder:
 		{
-			typeStr = "MLaneType::shoulder";
+			typeStr = "HDMapStandalone::MLaneType::shoulder";
 		}
 		break;
-		case MLaneType::biking:
+		case HDMapStandalone::MLaneType::biking:
 		{
-			typeStr = "MLaneType::biking";
+			typeStr = "HDMapStandalone::MLaneType::biking";
 		}
 		break;
-		case MLaneType::sidewalk:
+		case HDMapStandalone::MLaneType::sidewalk:
 		{
-			typeStr = "MLaneType::sidewalk";
+			typeStr = "HDMapStandalone::MLaneType::sidewalk";
 		}
 		break;
-		case MLaneType::border:
+		case HDMapStandalone::MLaneType::border:
 		{
-			typeStr = "MLaneType::border";
+			typeStr = "HDMapStandalone::MLaneType::border";
 		}
 		break;
-		case MLaneType::restricted:
+		case HDMapStandalone::MLaneType::restricted:
 		{
-			typeStr = "MLaneType::restricted";
+			typeStr = "HDMapStandalone::MLaneType::restricted";
 		}
 		break;
-		case MLaneType::parking:
+		case HDMapStandalone::MLaneType::parking:
 		{
-			typeStr = "MLaneType::parking";
+			typeStr = "HDMapStandalone::MLaneType::parking";
 		}
 		break;
-		case MLaneType::bidirectional:
+		case HDMapStandalone::MLaneType::bidirectional:
 		{
-			typeStr = "MLaneType::bidirectional";
+			typeStr = "HDMapStandalone::MLaneType::bidirectional";
 		}
 		break;
-		case MLaneType::median:
+		case HDMapStandalone::MLaneType::median:
 		{
-			typeStr = "MLaneType::median";
+			typeStr = "HDMapStandalone::MLaneType::median";
 		}
 		break;
-		case MLaneType::special1:
+		case HDMapStandalone::MLaneType::special1:
 		{
-			typeStr = "MLaneType::special1";
+			typeStr = "HDMapStandalone::MLaneType::special1";
 		}
 		break;
-		case MLaneType::special2:
+		case HDMapStandalone::MLaneType::special2:
 		{
-			typeStr = "MLaneType::special2";
+			typeStr = "HDMapStandalone::MLaneType::special2";
 		}
 		break;
-		case MLaneType::special3:
+		case HDMapStandalone::MLaneType::special3:
 		{
-			typeStr = "MLaneType::special3";
+			typeStr = "HDMapStandalone::MLaneType::special3";
 		}
 		break;
-		case MLaneType::roadWorks:
+		case HDMapStandalone::MLaneType::roadWorks:
 		{
-			typeStr = "MLaneType::roadWorks";
+			typeStr = "HDMapStandalone::MLaneType::roadWorks";
 		}
 		break;
-		case MLaneType::tram:
+		case HDMapStandalone::MLaneType::tram:
 		{
-			typeStr = "MLaneType::tram";
+			typeStr = "HDMapStandalone::MLaneType::tram";
 		}
 		break;
-		case MLaneType::rail:
+		case HDMapStandalone::MLaneType::rail:
 		{
-			typeStr = "MLaneType::rail";
+			typeStr = "HDMapStandalone::MLaneType::rail";
 		}
 		break;
-		case MLaneType::entry:
+		case HDMapStandalone::MLaneType::entry:
 		{
-			typeStr = "MLaneType::entry";
+			typeStr = "HDMapStandalone::MLaneType::entry";
 		}
 		break;
-		case MLaneType::exit:
+		case HDMapStandalone::MLaneType::exit:
 		{
-			typeStr = "MLaneType::exit";
+			typeStr = "HDMapStandalone::MLaneType::exit";
 		}
 		break;
-		case MLaneType::offRamp:
+		case HDMapStandalone::MLaneType::offRamp:
 		{
-			typeStr = "MLaneType::offRamp";
+			typeStr = "HDMapStandalone::MLaneType::offRamp";
 		}
 		break;
-		case MLaneType::onRamp:
+		case HDMapStandalone::MLaneType::onRamp:
 		{
-			typeStr = "MLaneType::onRamp";
+			typeStr = "HDMapStandalone::MLaneType::onRamp";
 		}
 		break;
-		case MLaneType::mwyEntry:
+		case HDMapStandalone::MLaneType::mwyEntry:
 		{
-			typeStr = "MLaneType::mwyEntry";
+			typeStr = "HDMapStandalone::MLaneType::mwyEntry";
 		}
 		break;
-		case MLaneType::mwyExit:
+		case HDMapStandalone::MLaneType::mwyExit:
 		{
-			typeStr = "MLaneType::mwyExit";
+			typeStr = "HDMapStandalone::MLaneType::mwyExit";
 		}
 		break;
 		default:
-			typeStr = "MLaneType::none";
+			typeStr = "HDMapStandalone::MLaneType::none";
 	}
 	SimOneAPI::bridgeLogOutput(ELogLevel_Type::ELogLevelDebug, "lane type: %s", typeStr.c_str());
 }
