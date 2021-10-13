@@ -7,7 +7,6 @@ import sys
 a=np.loadtxt("out.txt")
 f=plt.figure()
 ax=f.add_subplot(111)
-ax.set(xlim=[0, 10], ylim=[0, 10])
 
 i=1
 while i<len(sys.argv):
