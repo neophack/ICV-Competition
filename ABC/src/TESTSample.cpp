@@ -9,6 +9,7 @@
 #include <memory>
 #include <limits>
 #include <iostream>
+#include <cstdlib>
 
 #include "tool.h"
 #include "car.h"
@@ -17,7 +18,7 @@
 
 //Main function
 //
-int main()
+int main(int argc, char **argv)
 {
 
 
@@ -27,20 +28,18 @@ int main()
     car.setMaxSteering(M_PI/3);
     tool::Config cfg;
     tool::Obstacles obs;
+    
     tool::Obstacle ob;
     ob.type = OBSTACLE;
-    ob.x = 5;
-    ob.y = 5;
-    ob.length = 3;
-    ob.width = 3;
-    ob.yaw = 0;
-    obs.insertObs(ob);
-    ob.x = 8;
-    ob.y = 4;
-    obs.insertObs(ob);
-    ob.x = 3;
-    ob.y = 8;
-    obs.insertObs(ob);
+    for(int i=7;i<argc;i+=4){
+        ob.x = atoi(argv[i]);
+        ob.y = atoi(argv[i+1]);
+        ob.length = atoi(argv[i+2]);
+        ob.width = atoi(argv[i+3]);
+        ob.yaw = 0;
+        obs.insertObs(ob);
+    }
+
     bool pathReady = false;bool stop = false;bool toGo = false;
     cfg.gridRes = 0.3;
     cfg.yawRes = M_PI/12;
@@ -53,7 +52,7 @@ int main()
     cfg.switchBackCost = 0.5;
 
     tool::Path path;
-    double startX=0,startY=0,startYaw=0,endX=10,endY=15,endYaw=M_PI_2;
+    double startX=atoi(argv[1]),startY=atoi(argv[2]),startYaw=atoi(argv[3]),endX=atoi(argv[4]),endY=atoi(argv[5]),endYaw=atoi(argv[6]);
     tool::pid contr(1,0.000001,0.001);
     contr = 1.0; //慢一点好
     //-------------------------------------------------------------
